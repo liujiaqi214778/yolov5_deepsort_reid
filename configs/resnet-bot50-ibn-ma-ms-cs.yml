@@ -1,0 +1,14 @@
+_BASE_: ./Base-bagtricks.yml
+
+MODEL:
+  BACKBONE:
+    WITH_IBN: True
+
+SOLVER:
+  IMS_PER_BATCH: 192
+
+DATASETS:
+  NAMES: ("cuhkSYSU", "Market1501", "MSMT17")
+  TESTS: ("Market1501", "DukeMTMC")
+
+OUTPUT_DIR: ./logs/resnet-rot50-ibn-ma-ms-cs
