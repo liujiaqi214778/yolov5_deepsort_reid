@@ -32,7 +32,7 @@ class Gallery:
         self.gallery = torch.from_numpy(np.load(self.g_path)).cuda()
         self.names = np.load(self.names_path)  # gallery 实例对应的id或name
 
-        self.thres = 0.6  # 特征检索阈值  (0, 2)，最大余弦距离
+        self.thres = 0.4  # 特征检索阈值  (0, 2)，最大余弦距离
         self.maxn = 100  # gallery中最大人物数
         self.idn = 1  # 每个人物特征数
         self.pid_new = len(self.gallery)

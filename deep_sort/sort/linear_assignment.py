@@ -53,10 +53,12 @@ def min_cost_matching(
     if len(detection_indices) == 0 or len(track_indices) == 0:
         return [], track_indices, detection_indices  # Nothing to match.
 
+    # 利用检测框特征track特征的余弦相似度计算代价矩阵，distance_metric 可能是IoU或者特征距离
     cost_matrix = distance_metric(
         tracks, detections, track_indices, detection_indices)
     cost_matrix[cost_matrix > max_distance] = max_distance + 1e-5
 
+    # 利用代价矩阵（二部图）执行匈牙利算法，得到匹配成功的索引对
     row_indices, col_indices = linear_assignment(cost_matrix)
 
     matches, unmatched_tracks, unmatched_detections = [], [], []

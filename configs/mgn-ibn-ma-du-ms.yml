@@ -1,0 +1,13 @@
+_BASE_: ./Base-MGN.yml
+
+MODEL:
+  BACKBONE:
+    WITH_IBN: True
+
+DATASETS:
+  NAMES: ("Market1501", "DukeMTMC", "MSMT17",)
+  TESTS: ("CUHK03", "Market1501", "DukeMTMC", "MSMT17",)
+
+OUTPUT_DIR: /data2/qilei/logs/mgn-ibn-ma-du-ms
+
+# nohup python tools/train_net.py --config-file ./configs/mgn-ibn-ma-du-ms.yml > mgn-ibn-ma-du-ms.log &

@@ -14,10 +14,12 @@ def bbox_r(width, height, *xyxy):
     y_c = (bbox_top + bbox_h / 2)
     w = bbox_w
     h = bbox_h
-    return x_c, y_c, w, h
+    margin = min((bbox_left, bbox_top, width - bbox_left - w, height - bbox_top - h))
+    return x_c, y_c, w, h, margin
+
 
 class Person_detect():
-    def __init__(self, opt, source):
+    def __init__(self, opt):
         self.device = opt.device if torch.cuda.is_available() else 'cpu'
         self.half = self.device != 'cpu'  # half precision only supported on CUDA
         self.augment = opt.augment
@@ -26,14 +28,14 @@ class Person_detect():
         self.classes = opt.classes
         self.agnostic_nms = opt.agnostic_nms
         # Load model
-        self.model = DetectMultiBackend(opt.weights, device=self.device, dnn=False, data=opt.config_yolo, fp16=self.half)
+        self.model = DetectMultiBackend(opt.weights, device=self.device, dnn=False, fp16=self.half)  # data=opt.config_yolo
         if self.half:
             self.model.half()
         # Get names and colors
         self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
         self.colors = [[np.random.randint(0, 255) for _ in range(3)] for _ in range(len(self.names))]
 
-    def detect(self, path, img, im0s, vid_cap):
+    def detect(self, img, im0s, vid_cap):
         half = self.device != 'cpu'
         img = torch.from_numpy(img).to(self.device)
         img = img.half() if half else img.float()
@@ -54,10 +56,16 @@ class Person_detect():
                 det[:, :4] = scale_boxes(img.shape[2:], det[:, :4], im0s.shape).round()
                 for *xyxy, conf, cls in reversed(det):
                     img_h, img_w, _ = im0s.shape
-                    x_c, y_c, bbox_w, bbox_h = bbox_r(img_w, img_h, *xyxy)
+                    x_c, y_c, bbox_w, bbox_h, margin = bbox_r(img_w, img_h, *xyxy)
                     obj = [x_c, y_c, bbox_w, bbox_h]
                     if not conf.item() > self.conf_thres or not int(cls) == 0:
                         continue
+                    if obj[2] * obj[3] < 500:  # 像素太低
+                        continue
+                    # 框在边缘
+                    if margin < 8:  # 4
+                        continue
+                    
                     bbox_xywh.append(obj)
                     confs.append(conf.item())
                     clas.append(cls.item())
